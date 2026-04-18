@@ -28,6 +28,6 @@ func ConnectRedis() *redis.Client {
         addr = "localhost:6379"
     }
 	return redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr: addr,
 	})
 }
