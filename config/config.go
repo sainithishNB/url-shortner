@@ -10,7 +10,7 @@ import (
 )
 
 func ConnectDB() *gorm.DB {
-	dsn := os.Getenv("mysql://root:NRQDvUXBLecXcewtLnbsIKOWssmRSjSw@mysql.railway.internal:3306/railway")
+	dsn := os.Getenv("MYSQL_URL")
 	if dsn == "" {
 		dsn = "root:root@tcp(localhost:3307)/urlshortner?parseTime=True"
 	}
@@ -22,7 +22,7 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 func ConnectRedis() *redis.Client {
-	addr := os.Getenv("redis://default:uMauJoyPyGGdYEJVyEVRxbGBTYMrxsFL@redis.railway.internal:6379")
+	addr := os.Getenv("REDIS_URL")
 	if addr == "" {
         // local development fallback
         addr = "localhost:6379"
