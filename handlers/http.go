@@ -30,6 +30,10 @@ func (h *Handler) ShortenHandler(c *gin.Context) {
 		return
 	}
 	url, err := services.ShortenURL(h.db, h.rdb, req)
+	if err == services.ErrAliasExists {
+		c.JSON(http.StatusConflict, gin.H{"error": "alias already taken"}) // 409!
+		return
+	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed"})
 		return

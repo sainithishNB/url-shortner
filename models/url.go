@@ -12,5 +12,6 @@ type URL struct {
 }
 type ShortenRequest struct {
 	URL       string `json:"url"`
+	Alias     string `json:"alias"`
 	ExpiresIn int    `json:"expires_in"`
 }

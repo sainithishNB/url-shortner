@@ -16,6 +16,7 @@ const base62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
 
 var ErrURLExpired = errors.New("url has expired")
 var ErrURLNotFound = errors.New("url not found")
+var ErrAliasExists = errors.New("alias already exists")
 
 func generateShortCode(db *gorm.DB) string {
 	for {
@@ -33,8 +34,20 @@ func generateShortCode(db *gorm.DB) string {
 	}
 }
 func ShortenURL(db *gorm.DB, rdb *redis.Client, req models.ShortenRequest) (models.URL, error) {
-	shortcode := generateShortCode(db)
-	url := models.URL{ShortCode: shortcode, LongURL: req.URL}
+	var shortCode string
+	if req.Alias == "" {
+		shortCode = generateShortCode(db)
+	} else {
+
+		var url models.URL
+		result := db.Where("short_code=?", req.Alias).First(&url)
+		if result.Error == nil {
+			return models.URL{}, ErrAliasExists
+		}
+		shortCode = req.Alias
+	}
+
+	url := models.URL{ShortCode: shortCode, LongURL: req.URL}
 	if req.ExpiresIn > 0 {
 		expiresAt := time.Now().Add(time.Duration(req.ExpiresIn) * time.Hour)
 		url.ExpiresAt = &expiresAt
@@ -47,7 +60,7 @@ func ShortenURL(db *gorm.DB, rdb *redis.Client, req models.ShortenRequest) (mode
 	if url.ExpiresAt != nil {
 		ttl = time.Until(*url.ExpiresAt)
 	}
-	cache.SetURL(rdb, shortcode, url.LongURL, ttl)
+	cache.SetURL(rdb, shortCode, url.LongURL, ttl)
 	return url, nil
 }
 func GetOriginalURL(db *gorm.DB, rdb *redis.Client, code string) (string, error) {
