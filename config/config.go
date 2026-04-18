@@ -1,6 +1,8 @@
 package config
 
 import (
+	"os"
+
 	"github.com/redis/go-redis/v9"
 	"github.com/sainithishNB/url-shortner.git/models"
 	"gorm.io/driver/mysql"
@@ -8,7 +10,10 @@ import (
 )
 
 func ConnectDB() *gorm.DB {
-	dsn := "root:root@tcp(localhost:3307)/urlshortner?parseTime=True"
+	dsn := os.Getenv("mysql://root:NRQDvUXBLecXcewtLnbsIKOWssmRSjSw@mysql.railway.internal:3306/railway")
+	if dsn == "" {
+		dsn = "root:root@tcp(localhost:3307)/urlshortner?parseTime=True"
+	}
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect to database")
@@ -17,6 +22,11 @@ func ConnectDB() *gorm.DB {
 	return db
 }
 func ConnectRedis() *redis.Client {
+	addr := os.Getenv("redis://default:uMauJoyPyGGdYEJVyEVRxbGBTYMrxsFL@redis.railway.internal:6379")
+	if addr == "" {
+        // local development fallback
+        addr = "localhost:6379"
+    }
 	return redis.NewClient(&redis.Options{
 		Addr: "localhost:6379",
 	})

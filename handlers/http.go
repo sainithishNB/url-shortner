@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -27,6 +28,10 @@ func (h *Handler) ShortenHandler(c *gin.Context) {
 	}
 	if req.URL == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "url is required"})
+		return
+	}
+	if !strings.HasPrefix(req.URL, "http://") && !strings.HasPrefix(req.URL, "https://") {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "url must start with http:// or https://"})
 		return
 	}
 	url, err := services.ShortenURL(h.db, h.rdb, req)
